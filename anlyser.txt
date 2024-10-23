@@ -1,0 +1,186 @@
+## BPSK
+N=10** 5
+bit =np.random.randint(0,2,N)
+symbols = 2*bit -1 
+
+snr_db = np.arange(0,10,1)
+ber_sim= np.zeros(len(snr_db))
+ber_the= np.zeros(len(snr_db))
+
+for i , snr in enumerate(snr_db):
+    
+    snr_linear = 10**(snr/10)  # Use the individual snr value here
+    noise_power= 1/snr_linear
+    noise = np.sqrt(noise_power/2) * np.random.randn(N)
+    recived_signal = symbols+noise
+    recived_bit = recived_signal>0
+    
+    errors = np.sum(bit != recived_bit)
+    ber_sim[i]= errors/N
+    ber_the[i] = 0.5 * erfc(np.sqrt(snr_linear))
+    print(f'SNR = {snr} dB, Simulated BER = {ber_simulated[i]:e}, Theoretical BER = {ber_theoretical[i]:e}')
+    
+    
+
+
+
+
+
+
+
+### For ASK
+N=10**5
+bits =np.random.randint(0,2,N)
+symbols = bits
+snr_db= np.arange(0,10,1)
+ber_simulated= np.zeros(len(snr_db))
+ber_theortical = np.zeros(len(snr_db))
+
+## loop for each SNR value 
+for i ,snr in enumerate(snr_db):
+    snr_linear = 10**(snr/10)
+    noise_power = 1/snr_linear
+    noise = np.sqrt(noise_power/2)* np.random.randn(N)
+    recived_signal= symbols + noise
+    recived_bits=recived_signal>0.5
+
+    # error
+    errors=np.sum(bits !=recived_bits)
+    ber_simulated[i] = errors/N
+    ber_theoretical[i] =0.5 * erfc(np.sqrt(snr_linear) / np.sqrt(2))
+    print(f'SNR {snr} db simuber_simulated ber = {ber_simulated[i]:e}, theoritacl {ber_theoretical[i]:e}')
+
+
+
+
+
+
+
+
+
+# for QPSK
+import numpy as np
+from scipy.special import erfc
+import matplotlib.pyplot as plt
+
+# Number of bits to transmit
+N = 10**5  
+
+# Generate random bits
+bit = np.random.randint(0, 2, N)
+
+# Reshape bits into pairs for QPSK (2 bits per symbol)
+bit_reshaped = bit.reshape(-1, 2)
+
+# Mapping bits to QPSK symbols (Gray coding: 00->(1+1j), 01->(-1+1j), 10->(1-1j), 11->(-1-1j))
+symbols = (2*bit_reshaped[:, 0] - 1) + 1j * (2*bit_reshaped[:, 1] - 1)
+
+# Define SNR range in dB
+snr_db = np.arange(0, 11, 1)
+ber_sim = np.zeros(len(snr_db))
+ber_theo = np.zeros(len(snr_db))
+
+# Loop over different SNRs
+for i, snr in enumerate(snr_db):
+    
+    # SNR linear scale
+    snr_linear = 10**(snr/10)
+    
+    # Noise standard deviation
+    noise_std = np.sqrt(1 / (2 * snr_linear))
+    
+    # AWGN noise
+    noise = noise_std * (np.random.randn(N//2) + 1j*np.random.randn(N//2))
+    
+    # Received signal
+    received_signal = symbols + noise
+    
+    # Demodulation (decision making: real and imaginary parts > 0 correspond to 1, otherwise 0)
+    received_bits = np.zeros(bit_reshaped.shape)
+    received_bits[:, 0] = np.real(received_signal) > 0  # Real part (I channel)
+    received_bits[:, 1] = np.imag(received_signal) > 0  # Imaginary part (Q channel)
+    
+    # Count bit errors
+    errors = np.sum(bit_reshaped != received_bits)
+    ber_sim[i] = errors / N  # BER for the current SNR
+    
+    # Theoretical BER for QPSK in AWGN
+    ber_theo[i] = 0.5 * erfc(np.sqrt(snr_linear / 2))
+
+# Plot simulated and theoretical BER
+plt.figure()
+plt.semilogy(snr_db, ber_sim, 'o-', label='Simulated BER')
+plt.semilogy(snr_db, ber_theo, 's-', label='Theoretical BER')
+plt.xlabel('SNR (dB)')
+plt.ylabel('Bit Error Rate (BER)')
+plt.title('QPSK over AWGN')
+plt.legend()
+plt.grid(True)
+plt.show()
+ 
+
+
+
+# XRC(t)
+T=1
+t= np.linspace(-2*T, 2*T, 100)
+alpha = 0
+Xrct1= (np.sinc(t/T)) * (np.cos(alpha*(np.pi)* t/T))/ (1-(4* alpha*alpha*t*t)/T*T)
+alpha = 0.5
+Xrct2= (np.sinc(t/T)) * (np.cos(alpha*(np.pi)* t/T))/ (1-(4* alpha*alpha*t*t)/T*T)
+alpha = 1
+Xrct3= (np.sinc(t/T)) * (np.cos(alpha*(np.pi)* t/T))/ (1-(4* alpha*alpha*t*t)/T*T)
+
+
+
+def XRC(f,T,alpha):
+    abs_f=np.abs(f)
+    if abs_f < (1-alpha)/ 2 * T:
+        return T
+    elif (1-alpha)/2*T <= abs_f <=(1+alpha)/2*T:
+        return (T / 2) * (1 + np.cos(np.pi * (abs_f - (1 - alpha) / 2 * T) / (alpha * T)))
+    else:
+        return 0
+
+f_values = np.linspace(-T,T,1000)
+alpha = 0
+Xrcf1 = np.array([XRC(f,T,alpha) for f in f_values])
+alpha = 0.5
+Xrcf2 = np.array([XRC(f,T,alpha) for f in f_values])
+alpha = 1
+Xrcf3 = np.array([XRC(f,T,alpha) for f in f_values])
+
+## ploting 
+plt.plot(f_values,Xrcf1,color='b')
+plt.plot(f_values,Xrcf2,color='r')
+plt.plot(f_values,Xrcf3,color='g')
+
+
+
+
+alpha = 0
+bandwidth = (1/T) * (1 + alpha)
+excessbw = bandwidth - 1/T
+excessbw_percentage = (excessbw / (1/T)) * 100
+print(f'Bandwidth for alpha = {alpha} is {bandwidth:.1f} Hz')
+print(f'Excess bandwidth for alpha = {alpha:.2f} is {excessbw_percentage:.2f}%')
+
+
+alpha = 0.5
+
+bandwidth = (1/T) * (1 + alpha)
+excessbw = bandwidth - 1/T
+excessbw_percentage = (excessbw / (1/T)) * 100
+print(f'Bandwidth for alpha = {alpha} is {bandwidth:.1f} Hz')
+print(f'Excess bandwidth for alpha = {alpha:.2f} is {excessbw_percentage:.2f}%')
+
+alpha = 1
+
+bandwidth = (1/T) * (1 + alpha)
+excessbw = bandwidth - 1/T
+excessbw_percentage = (excessbw / (1/T)) * 100
+print(f'Bandwidth for alpha = {alpha} is {bandwidth:.1f} Hz')
+print(f'Excess bandwidth for alpha = {alpha:.2f} is {excessbw_percentage:.2f}%')
+
+
+

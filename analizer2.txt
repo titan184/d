@@ -1,0 +1,143 @@
+// lab 5
+Time and frequency parameters
+T = 2
+t = np. linspace (-T, T, 1000)
+f = np. linspace (-2, 2, 1000)
+tau = np. linspace (-T, T, 1000)
+# Time domain : rectangular pulse p_T(t)
+pT_t = (np. abs(t) <= T / 2)
+pT_f = T * np. sinc (T * f)
+ESD_f = np.abs( pT_f ) ** 2
+Autocorrelation function : R_{ p_Tp_T }(\ tau)
+RpTpT_tau = np. convolve (pT_t , np. flip ( pT_t ), mode =’same ’) * (T / 1000)
+RpTpT_tau = RpTpT_tau / np.max( RpTpT_tau ) * T
+
+
+// lab 4
+import numpy as np
+import matplotlib . pyplot as plt
+from scipy . signal import convolve
+# Generate an array of values from -6 to 6
+t = np. linspace (-6, 6, 400)
+
+Define unit step function u(t) for t >= 0
+u = np. where (t >= 0, 1, 0)
+# Define the function p(t) = exp (-2t) * u(t)
+p = np.exp (-2 * t) * u
+# Define unit step function u(-t) for t <= 0
+u_neg = np. where (t <= 0, 1, 0)
+# Define the function p(-t) = exp (2t) * u(-t)
+p_neg = np.exp (2 * t) * u_neg
+
+# Define h(t) = p(T-t) * u(t) for T = 2
+T = 2
+u_T_t = np. where (t <= T, 1, 0)
+h = np.exp (-2 * (T - t)) * u_T_t
+# Perform convolution for matched filter output
+dt = t [1] - t [0] # Time step
+matched_filter_output = convolve (p, p_neg , mode =’same ’) * dt
+
+
+
+lab 3   ## pam 
+import matplotlib . pyplot as plt
+fs = 100 # Sampling frequency
+fm = 5 # Message signal frequency
+Ts = 1/ fs # Sampling interval
+T = 0.005 # Pulse width
+t = np. linspace (0, 1, 1000) # Time axis
+mt = np. cos (2 * np.pi * fm * t) # Message signal
+
+
+# Impulse train ( sampling )
+impulse_train = np. ones_like (t)
+sampled_signal = mt * impulse_train
+n = np. arange (0, 1 + Ts , Ts) # Sampling instances
+m_sampled = np.cos (2 * np.pi * fm * n)
+
+
+# Pulse shape function
+def p_t(t):
+return np. where ((t >= 0) & (t < T), 1, 0)
+# PAM signal generation
+m_pam = np. zeros_like (t)
+for i in range (len(n)):
+m_pam += m_sampled [i] * p_t(t - n[i])
+
+FFT Analysis
+N = len(t) # FFT length
+f_axis = np.fft . fftshift (np.fft . fftfreq (N, d=1/ fs )) * 10
+# Frequency axis
+fft_pt = np.abs (np.fft . fftshift (np.fft .fft (p_t (t)) / N))
+# FFT of pulse shape
+fft_pam = np.abs (np.fft . fftshift (np.fft .fft ( m_pam ) / N))
+# FFT of PAM signal
+
+
+//  lab 2
+
+
+# Parameters
+f_impulse = 100
+f_message = 5
+t_end = 1
+interval = 0.01
+# Time vector
+t = np. arange (0, t_end , interval )
+# Impulse train
+impulse_train = f_impulse * (np.mod(t, 1/ f_impulse ) < interval )
+# Message signal
+message_signal = np. cos (2 * np.pi * f_message * t)
+# Sampled signal
+sampled_signal = message_signal * impulse_train
+# FFT parameters
+N = len(t)
+f_axis = np. linspace ( -1/(2* interval ), 1/(2* interval ), N)
+# FFT computations
+fft_message = np.abs(np.fft. fftshift (np.fft.fft( message_signal ) / N))
+fft_impulse = np.abs(np.fft. fftshift (np.fft.fft( impulse_train ) / N))
+fft_sampled = np.abs(np.fft. fftshift (np.fft.fft( sampled_signal ) / N))
+
+
+
+
+lab1 
+
+
+# Parameters
+f = 100
+t_max = 0.4
+interval = 0.01
+# Time vector
+t = np. arange (0, t_max + interval , interval )
+# Impulse train
+train = np. ones_like (t)
+
+# Fourier Transform of the impulse train
+train_fft = np.fft.fft( train /N)
+train_freq = np.fft. fftfreq ( train .size , d= interval )
+fm = 5
+m = np.sin (2 * np.pi * fm * t)
+
+m_fft = f * (np.fft.fft(m/N))
+m_freq = np. fft. fftfreq (m.size , d= interval )
+s = m * train
+
+Fourier Transform of the sampled signal
+s_fft = f * (np.fft.fft(s/N))
+s_freq = np. fft. fftfreq (s.size , d= interval )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
